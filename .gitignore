@@ -1,0 +1,9 @@
+local_*.py
+*.pyc
+.vscode/
+.idea/
+media/keywords_logo/
+*.sqlite3
+*.db
+__pycatch__/
+*.log
