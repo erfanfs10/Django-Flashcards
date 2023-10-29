@@ -1,9 +1,10 @@
 from django.urls import path
-from .views import CategoryList, CategoryView, CategoryAdd
+from .views import CategoryList, CategoryDetail, CategoryAdd, CategoryRename
 
 
 urlpatterns = [
-    path("", CategoryList.as_view(), name="category-list"),
-    path("<str:category_name>/", CategoryView.as_view(), name="category-view"),
-    path("add/", CategoryAdd.as_view(), name="category-add")
+    path("list/", CategoryList.as_view(), name="category-list"),
+    path("detail/", CategoryDetail.as_view(), name="category-detail"),
+    path("create/", CategoryAdd.as_view(), name="category-add"),
+    path("rename/", CategoryRename.as_view(), name="category-rename")
 ]
