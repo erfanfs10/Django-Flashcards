@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'account',
     'card',
     'category',
+    
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'django_celery_beat'
@@ -73,12 +74,13 @@ WSGI_APPLICATION = 'flashcards.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get("DB_NAME", "flashcards"),
-        'USER': os.environ.get("DB_USER", "postgres"),
-        'PASSWORD': os.environ.get("DB_PASSWORD", "852"),
-        'HOST': os.environ.get("DB_HOST", "localhost"),
-        'PORT': os.environ.get("DB_PORT", "5432")
+        'ENGINE': 'django.db.backends.sqlite3',
+        "NAME": BASE_DIR / "db.sqlite3"
+        # 'NAME': os.environ.get("DB_NAME", "flashcards"),
+        # 'USER': os.environ.get("DB_USER", "postgres"),
+        # 'PASSWORD': os.environ.get("DB_PASSWORD", "852"),
+        # 'HOST': os.environ.get("DB_HOST", "localhost"),
+        # 'PORT': os.environ.get("DB_PORT", "5432")
     }
 }
 
@@ -94,8 +96,6 @@ CACHES = {
         "LOCATION": str(os.environ.get("CACHE_LOCATION", "redis://127.0.0.1:6379")),
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -113,13 +113,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
-    {    
-        "NAME": "utils.IsUpperPasswordValidator", # The password must has atleast one uppercase letter
-    },
-    {
-        "NAME": "utils.IsPuncPasswordValidator", # The password must has atleast one punctuation
-    },
-
 ]
 
 
@@ -166,7 +159,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=50),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,  

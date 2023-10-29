@@ -18,7 +18,6 @@ class RegisterView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             tokens = get_tokens_for_user(user)
-            user.send_email(f"welcome {user.name}", "welcome to flashcards app")
 
             return Response({**tokens}, status=status.HTTP_201_CREATED)
         

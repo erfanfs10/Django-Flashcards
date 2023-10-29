@@ -5,6 +5,6 @@ from .models import User
 
 @register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ("email", "name", "phone_number", "created", "is_active")
+    list_display = ("username", "created", "is_active")
     list_filter = ("is_active",)
     list_editable = ("is_active",)
