@@ -2,9 +2,11 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from .serializers import CategoryListSerializer, CardSerializer
+from django.db import transaction
+from card.serializers import CardSerializer
+from .serializers import CategoryListSerializer
 from .models import Category
 
 
@@ -22,15 +24,16 @@ class CategoryDetail(APIView):
 
     def get(self, request):
 
-        name = request.data.get("name", None)
-        if name is not None:
+        category_name = request.data.get("category_name", None)
+        if category_name is not None:
 
-            category = get_object_or_404(Category, name=name, user=request.user)
-            cards = category.cards.all()
+            category = get_object_or_404(Category, name=category_name, user=request.user)
+            cards = category.cards.all().defer("category").order_by("-created")
+        
             serializer = CardSerializer(cards, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
-        return Response(data={"message": "enter the name!"},
+        return Response(data={"message": "enter the category_name!"},
                                  status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -39,22 +42,26 @@ class CategoryAdd(APIView):
     
     def post(self, request):
 
-        name = request.data.get("name", None)
-        if name is not None:
+        category_name = request.data.get("category_name", None)
+        if category_name is not None:
 
             try:
 
-                Category.objects.get(name=name, user=request.user)
-                return Response(data={"message": f"category with name {name} already exist!"},
+                Category.objects.get(name=category_name, user=request.user)
+                return Response(data={"message": f"category with name {category_name}\
+                                       already exist!"},
                                  status=status.HTTP_400_BAD_REQUEST)
             
             except Category.DoesNotExist:
 
-                Category.objects.create(name=name, user=request.user)
-                return Response(data={"message": f"category with name {name} created!"},
-                                 status=status.HTTP_201_CREATED)    
+                with transaction.atomic():
+                    Category.objects.create(name=category_name, user=request.user)
 
-        return Response(data={"message": "enter the name!"},
+                return Response(
+                    data={"message": f"category with name {category_name} created!"},
+                      status=status.HTTP_201_CREATED)    
+
+        return Response(data={"message": "enter the category_name!"},
                                  status=status.HTTP_400_BAD_REQUEST)
     
 
@@ -63,21 +70,42 @@ class CategoryRename(APIView):
 
     def put(self, request):
         
-        name = request.data.get("name", None)
-        rename = request.data.get("rename", None)
+        category_name = request.data.get("category_name", None)
+        category_rename = request.data.get("category_rename", None)
 
-        if name is not None and rename is not None:
+        if category_name is not None and category_rename is not None:
 
-            category = get_object_or_404(Category, name=name, user=request.user)
-            category.name = rename
-            category.save()
+            category = get_object_or_404(Category, name=category_name, user=request.user)
 
-            return Response(data={"message": f"the {name} category name changed to {rename}"},
-                             status=status.HTTP_200_OK)
+            with transaction.atomic():
+                category.name = category_rename
+                category.save()
+
+            return Response(
+                data={"message": f"the {category_name} category name changed to {category_rename}"}
+                , status=status.HTTP_200_OK)
         
-        return Response(data={"message": "enter the name and rename!"},
+        return Response(data={"message": "enter the category_name and category_rename!"},
                                  status=status.HTTP_400_BAD_REQUEST)
     
 
 class CategoryDelete(APIView):
-    pass    
+    permission_classes = (IsAuthenticated,)
+
+    def delete(self, request):
+
+        category_name = request.data.get("category_name", None)
+
+        if category_name is not None:
+
+            category = get_object_or_404(Category, name=category_name, user=request.user)
+            
+            with transaction.atomic():
+                category.delete()
+
+            return Response(data={"message": f"the {category_name} category deleted!"},
+                             status=status.HTTP_200_OK)
+        
+        return Response(data={"message": "enter the category_name!"},
+                                 status=status.HTTP_400_BAD_REQUEST)
+    
