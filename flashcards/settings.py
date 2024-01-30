@@ -170,7 +170,6 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
 }
 
-
 CELERY_BROKER_URL = str(os.environ.get('CELERY_BROKER_URL', "redis://127.0.0.1:6379"))
 CELERY_TIMEZONE = 'UTC'
 CELERYD_SOFT_TIME_LIMIT= 20  # seconds
